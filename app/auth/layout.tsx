@@ -20,9 +20,6 @@ export default function Authlayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Center auth pages without affecting the global layout.
-  // Use viewport units so it fills the screen even though the root body is a flex container.
-  // Avoid nesting <main> inside the root <main> for valid semantics.
   return (
     <div className="w-screen min-h-dvh flex items-center justify-center px-4">
       <div className="w-full max-w-md">

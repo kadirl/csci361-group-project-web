@@ -27,10 +27,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased flex`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased flex overflow-x-hidden`}
       >
         <ConditionalSidebar />
-        <main className="">
+        <main className="flex-1 overflow-auto">
           {children}
         </main>
       </body>
