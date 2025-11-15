@@ -1,8 +1,9 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import FormContainer from "../components/FormContainer";
 import useAuthStore from "@/lib/useAuthStore";
+import { useCitiesStore } from "@/lib/cities-store";
 
 type CompanyType = "supplier" | "consumer";
 
@@ -12,6 +13,9 @@ const RegisterPage = () => {
   const loading = useAuthStore((state) => state.loading);
   const error = useAuthStore((state) => state.error);
   const uploadPhotos = useAuthStore((state) => state.uploadPhotos);
+
+  const cities = useCitiesStore((state) => state.cities);
+  const fetchCities = useCitiesStore((state) => state.fetchCities);
 
   const [companyType, setCompanyType] = useState<CompanyType | null>(null);
   const [formState, setFormState] = useState(1);
@@ -23,7 +27,8 @@ const RegisterPage = () => {
   const [formData, setFormData] = useState({
     companyName: "",
     companyDescription: "",
-    companyLocation: "",
+    companyLocation: "", // Will store city_id
+    companyLocationName: "", // Will store city_name for display
     email: "",
     password: "",
     ownerFirstName: "",
@@ -32,12 +37,14 @@ const RegisterPage = () => {
     ownerEmail: "",
   });
 
+  useEffect(() => {
+    fetchCities();
+  }, []);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleNext = () => {
+  }; const handleNext = () => {
     if (companyType === null && formState === 1) {
       alert("Please select a company type to proceed.");
       return;
@@ -150,15 +157,30 @@ const RegisterPage = () => {
               />
             </div>
             <div className="mt-2">
-              <input type="text"
+              <select
                 id="companyLocation"
                 name="companyLocation"
-                placeholder="Company Location"
                 required
                 value={formData.companyLocation}
-                onChange={handleInputChange}
-                className="w-full rounded-md border border-gray-500 px-3 py-2 focus:border-gray-300 focus:outline-none sm:text-sm"
-              />
+                onChange={(e) => {
+                  const selectedCity = cities.find(c => String(c.city_id) === String(e.target.value));
+                  if (selectedCity) {
+                    setFormData(prev => ({
+                      ...prev,
+                      companyLocation: String(selectedCity.city_id),
+                      companyLocationName: selectedCity.city_name
+                    }));
+                  }
+                }}
+                className="w-full rounded-md border border-gray-500 px-3 py-2 focus:border-gray-300 focus:outline-none sm:text-sm  text-white"
+              >
+                <option value="">Select a city</option>
+                {cities.map((city) => (
+                  <option key={city.city_id} value={String(city.city_id)}>
+                    {city.city_name}
+                  </option>
+                ))}
+              </select>
             </div>
             <div className="mt-2">
               <input

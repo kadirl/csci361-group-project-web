@@ -1,50 +1,8 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { API_BASE } from "./constants";
+import { AuthStore } from "@/lib/constants";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
-
-export type User = {
-  id: string;
-  email: string;
-  first_name: string;
-  last_name: string;
-  phone_number: string;
-  role: string;
-  locale: string;
-  created_at?: string;
-};
-
-export type AuthStore = {
-  isAuthenticated: boolean;
-  accessToken: string | null;
-  refreshToken: string | null;
-  user: User | null;
-  loading: boolean;
-  error: string | null;
-
-  login: (email: string, password: string) => Promise<void>;
-  register: (data: {
-    company: {
-      name: string;
-      description: string;
-      logo_url?: string;
-      location: string;
-      company_type: "supplier" | "consumer";
-    };
-    user: {
-      first_name: string;
-      last_name: string;
-      phone_number: string;
-      email: string;
-      password: string;
-      role: "owner";
-      locale: string;
-    };
-  }) => Promise<void>;
-  logout: () => void;
-  setTokens: (accessToken: string, refreshToken: string) => void;
-  uploadPhotos: (files: File[]) => Promise<string[]>;
-};
 
 export const useAuthStore = create<AuthStore>()(
   persist(
