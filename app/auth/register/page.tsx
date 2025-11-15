@@ -1,14 +1,38 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import FormContainer from "../components/FormContainer";
+import useAuthStore from "@/lib/useAuthStore";
 
 type CompanyType = "supplier" | "consumer";
 
 const RegisterPage = () => {
+  const router = useRouter();
+  const register = useAuthStore((state) => state.register);
+  const loading = useAuthStore((state) => state.loading);
+  const error = useAuthStore((state) => state.error);
+
   const [companyType, setCompanyType] = useState<CompanyType | null>(null);
   const [formState, setFormState] = useState(1);
   const [companyPhotoName, setCompanyPhotoName] = useState<string>("");
   const [ownerPhotoName, setOwnerPhotoName] = useState<string>("");
+
+  const [formData, setFormData] = useState({
+    companyName: "",
+    companyDescription: "",
+    companyLocation: "",
+    email: "",
+    password: "",
+    ownerFirstName: "",
+    ownerLastName: "",
+    ownerNumber: "",
+    ownerEmail: "",
+  });
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
 
   const handleNext = () => {
     if (companyType === null && formState === 1) {
@@ -22,10 +46,42 @@ const RegisterPage = () => {
     setFormState(formState - 1);
   }
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      await register({
+        company: {
+          name: formData.companyName,
+          description: formData.companyDescription,
+          location: formData.companyLocation,
+          company_type: companyType!,
+        },
+        user: {
+          first_name: formData.ownerFirstName,
+          last_name: formData.ownerLastName,
+          phone_number: formData.ownerNumber,
+          email: formData.ownerEmail,
+          password: formData.password,
+          role: "owner",
+          locale: "en",
+        }
+      });
+      router.push("/");
+    } catch (err: any) {
+      console.error("Registration error:", err.message);
+    }
+  }
+
   return (
     <FormContainer>
       <h1 className="text-2xl font-bold mb-2">Register</h1>
-      <form action="">
+      {error && (
+        <div className="mb-4 p-3 rounded bg-red-900/30 border border-red-500 text-red-400 text-sm">
+          {error}
+        </div>
+      )}
+      <form onSubmit={handleSubmit}>
         {formState === 1 && (
           <div>
             <label className="block text-sm font-medium mb-2">Company Type</label>
@@ -62,6 +118,8 @@ const RegisterPage = () => {
                 placeholder="Company Name"
                 type="text"
                 required
+                value={formData.companyName}
+                onChange={handleInputChange}
                 className="w-full rounded-md border border-gray-500 px-3 py-2 focus:border-gray-300 focus:outline-none sm:text-sm"
               />
             </div>
@@ -71,6 +129,8 @@ const RegisterPage = () => {
                 name="companyDescription"
                 placeholder="Company Description"
                 required
+                value={formData.companyDescription}
+                onChange={handleInputChange}
                 className="w-full rounded-md border border-gray-500 px-3 py-2 focus:border-gray-300 focus:outline-none sm:text-sm"
               />
             </div>
@@ -80,6 +140,8 @@ const RegisterPage = () => {
                 name="companyLocation"
                 placeholder="Company Location"
                 required
+                value={formData.companyLocation}
+                onChange={handleInputChange}
                 className="w-full rounded-md border border-gray-500 px-3 py-2 focus:border-gray-300 focus:outline-none sm:text-sm"
               />
             </div>
@@ -114,6 +176,8 @@ const RegisterPage = () => {
                 type="email"
                 autoComplete="email"
                 required
+                value={formData.email}
+                onChange={handleInputChange}
                 className="w-full rounded-md border border-gray-500 px-3 py-2 focus:border-gray-300 focus:outline-none sm:text-sm"
               />
             </div>
@@ -126,6 +190,8 @@ const RegisterPage = () => {
                 placeholder="Password"
                 autoComplete="current-password"
                 required
+                value={formData.password}
+                onChange={handleInputChange}
                 className="w-full rounded-md border border-gray-500 px-3 py-2 focus:border-gray-300 focus:outline-none sm:text-sm"
               />
             </div>
@@ -135,11 +201,25 @@ const RegisterPage = () => {
           <div>
             <div className="mt-2">
               <input
-                id="ownerName"
-                name="ownerName"
-                placeholder="Owner Name"
+                id="ownerFirstName"
+                name="ownerFirstName"
+                placeholder="Owner First Name"
                 type="text"
                 required
+                value={formData.ownerFirstName}
+                onChange={handleInputChange}
+                className="w-full rounded-md border border-gray-500 px-3 py-2 focus:border-gray-300 focus:outline-none sm:text-sm"
+              />
+            </div>
+            <div className="mt-2">
+              <input
+                id="ownerLastName"
+                name="ownerLastName"
+                placeholder="Owner Last Name"
+                type="text"
+                required
+                value={formData.ownerLastName}
+                onChange={handleInputChange}
                 className="w-full rounded-md border border-gray-500 px-3 py-2 focus:border-gray-300 focus:outline-none sm:text-sm"
               />
             </div>
@@ -150,6 +230,8 @@ const RegisterPage = () => {
                 placeholder="Owner Phone Number"
                 type="tel"
                 required
+                value={formData.ownerNumber}
+                onChange={handleInputChange}
                 className="w-full rounded-md border border-gray-500 px-3 py-2 focus:border-gray-300 focus:outline-none sm:text-sm"
               />
             </div>
@@ -161,6 +243,8 @@ const RegisterPage = () => {
                 type="email"
                 autoComplete="email"
                 required
+                value={formData.ownerEmail}
+                onChange={handleInputChange}
                 className="w-full rounded-md border border-gray-500 px-3 py-2 focus:border-gray-300 focus:outline-none sm:text-sm"
               />
             </div>
@@ -199,8 +283,8 @@ const RegisterPage = () => {
         </div>
         {formState == 4 && (
           <div className="mt-3.5">
-            <button type="submit" className="w-full py-3 px-4 rounded-lg bg-white text-black font-medium transition-all hover:bg-gray-100 cursor-pointer">
-              Register
+            <button type="submit" disabled={loading} className="w-full py-3 px-4 rounded-lg bg-white text-black font-medium transition-all hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
+              {loading ? "Registering..." : "Register"}
             </button>
           </div>
         )}
