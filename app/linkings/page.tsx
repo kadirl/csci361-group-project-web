@@ -6,10 +6,10 @@ type TabType = "pending" | "active";
 
 function LinkingsPage() {
   const [activeTab, setActiveTab] = useState<TabType>("pending");
-  const { linkings, loading, fetchLinkings, acceptLinking, rejectLinking, stopLinking } = useLinkingsStore();
+  const { linkings, loading, fetchLinkings, updateLinking } = useLinkingsStore();
 
   useEffect(() => {
-    // fetchLinkings(); // Uncomment when backend is ready
+    fetchLinkings(); // Uncomment when backend is ready
   }, [fetchLinkings]);
 
   const pendingLinkings = linkings.filter((linking) => linking.status === LinkingStatus.pending);
@@ -17,7 +17,7 @@ function LinkingsPage() {
 
   const handleAccept = async (linkingId: number) => {
     try {
-      await acceptLinking(linkingId);
+      await updateLinking(linkingId, "accepted");
     } catch (error: any) {
       alert(`Failed to accept: ${error.message}`);
     }
@@ -26,7 +26,7 @@ function LinkingsPage() {
   const handleReject = async (linkingId: number) => {
     if (!confirm("Are you sure you want to reject this linking?")) return;
     try {
-      await rejectLinking(linkingId);
+      await updateLinking(linkingId, "rejected");
     } catch (error: any) {
       alert(`Failed to reject: ${error.message}`);
     }
@@ -35,7 +35,7 @@ function LinkingsPage() {
   const handleStop = async (linkingId: number) => {
     if (!confirm("Are you sure you want to stop this linking?")) return;
     try {
-      await stopLinking(linkingId);
+      await updateLinking(linkingId, "unlinked");
     } catch (error: any) {
       alert(`Failed to stop: ${error.message}`);
     }
@@ -111,13 +111,13 @@ function LinkingsPage() {
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleAccept(linking.linking_id)}
-                    className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors font-medium"
+                    className="cursor-pointer px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors font-medium"
                   >
                     Accept
                   </button>
                   <button
                     onClick={() => handleReject(linking.linking_id)}
-                    className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors font-medium"
+                    className="cursor-pointer px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors font-medium"
                   >
                     Reject
                   </button>
