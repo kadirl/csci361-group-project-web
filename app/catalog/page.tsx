@@ -3,11 +3,12 @@ import { useState, useEffect } from "react";
 import CatalogItem from "./components/CatalogItem";
 import SearchInput from "./components/SearchInput";
 import { useCatalogStore } from "@/lib/catalog-store";
-import SideSheet from "./components/SideSheet";
+import AddSideSheet from "./components/AddSideSheet";
+import EditSideSheet from "./components/EditSideSheet";
 
 const CatalogPage = () => {
-  const [open, setOpen] = useState(false);
-  const [mode, setMode] = useState<'add' | 'edit'>('edit');
+  const [addOpen, setAddOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const catalog_items = useCatalogStore((state) => state.items) || [];
   const searchTerm = useCatalogStore((state) => state.searchTerm);
   const setCurrentItemId = useCatalogStore((state) => state.setCurrentItemId);
@@ -27,15 +28,12 @@ const CatalogPage = () => {
   }) : [];
 
   const handleClick = (id: string) => {
-    setMode('edit');
-    setOpen(true);
     setCurrentItemId(id);
+    setEditOpen(true);
   }
 
   const handleAddItem = () => {
-    setMode('add');
-    setCurrentItemId(null);
-    setOpen(true);
+    setAddOpen(true);
   }
 
   return (
@@ -59,7 +57,7 @@ const CatalogPage = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {filteredItems.length > 0 ? (
             filteredItems.map((item) => (
-              <div className="flex" key={item.product_id} onClick={() => handleClick(item.product_id)}>
+              <div className="flex" key={item.product_id} onClick={() => item.product_id && handleClick(item.product_id)}>
                 <CatalogItem item={item} />
               </div>
             ))
@@ -71,7 +69,8 @@ const CatalogPage = () => {
         </div>)
       }
 
-      <SideSheet isOpen={open} onClose={() => setOpen(false)} mode={mode} />
+      <AddSideSheet isOpen={addOpen} onClose={() => setAddOpen(false)} />
+      <EditSideSheet isOpen={editOpen} onClose={() => setEditOpen(false)} />
     </div>
   )
 }

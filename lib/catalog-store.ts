@@ -30,7 +30,7 @@ type CatalogStore = {
   }) => Promise<void>;
   updateItem: (item: {
     item: Omit<CatalogItem, 'picture_url'>,
-    pictures: File[],
+    pictures: (string | File)[],
   }) => Promise<void>;
   deleteItem: (id: string) => Promise<void>;
 };
@@ -173,6 +173,71 @@ export const useCatalogStore = create<CatalogStore>((set, get) => ({
     try {
       console.log(updated);
       const accessToken = useAuthStore.getState().accessToken;
+
+      // Process images: upload Files to S3, keep existing URLs as-is
+      const picture_urls: string[] = [];
+
+      for (const item of updated.pictures) {
+        if (typeof item === 'string') {
+          // It's an existing URL, add it directly
+          picture_urls.push(item);
+        } else {
+          // It's a File, upload to S3
+          const file = item as File;
+          const fileExtension = file.name.split(".").pop() || "jpg";
+
+          // Get presigned URL
+          const uploadUrlResponse = await fetch(
+            `${API_BASE}/uploads/upload-url?ext=${fileExtension}`,
+            {
+              method: "GET",
+              headers: {
+                "Authorization": `Bearer ${accessToken}`,
+              },
+            }
+          );
+
+          if (!uploadUrlResponse.ok) {
+            let errorMessage = "Failed to get upload URL";
+            try {
+              const errorData = await uploadUrlResponse.json();
+              errorMessage = errorData.detail || errorData.message || errorMessage;
+            } catch (e) {
+              errorMessage = `Server error: ${uploadUrlResponse.status} ${uploadUrlResponse.statusText}`;
+            }
+            throw new Error(errorMessage);
+          }
+
+          const uploadUrlData = await uploadUrlResponse.json();
+          const s3PresignedUrl = uploadUrlData.put_url.url;
+
+          if (!s3PresignedUrl) {
+            throw new Error("No presigned URL received from server");
+          }
+
+          // Upload to S3
+          const { url, fields } = uploadUrlData.put_url;
+          const formData = new FormData();
+          Object.entries(fields).forEach(([key, value]) => {
+            formData.append(key, value as string);
+          });
+          formData.append("file", file);
+
+          const uploadResponse = await fetch(s3PresignedUrl, {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!uploadResponse.ok) {
+            throw new Error(`Failed to upload to S3: ${uploadResponse.status} ${uploadResponse.statusText}`);
+          }
+
+          // Add the final URL
+          picture_urls.push(uploadUrlData.finalurl);
+        }
+      }
+
+      // Update product with processed URLs
       const response = await fetch(`${API_BASE}/products/${updated.item.product_id}`, {
         method: "PUT",
         headers: {
@@ -181,7 +246,7 @@ export const useCatalogStore = create<CatalogStore>((set, get) => ({
         },
         body: JSON.stringify({
           ...updated.item,
-          picture_url: updated.pictures,
+          picture_url: picture_urls,
         }),
       });
 
@@ -221,5 +286,6 @@ export const useCatalogStore = create<CatalogStore>((set, get) => ({
       throw error;
     }
   },
+
 }));
 
