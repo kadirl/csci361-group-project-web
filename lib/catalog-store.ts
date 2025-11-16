@@ -31,6 +31,7 @@ type CatalogStore = {
   updateItem: (item: {
     item: Omit<CatalogItem, 'picture_url'>,
     pictures: (string | File)[],
+    picturesToRemove: string[],
   }) => Promise<void>;
   deleteItem: (id: string) => Promise<void>;
 };
@@ -234,6 +235,36 @@ export const useCatalogStore = create<CatalogStore>((set, get) => ({
 
           // Add the final URL
           picture_urls.push(uploadUrlData.finalurl);
+        }
+      }
+
+      // delete removed pictures from server
+      for (const url of updated.picturesToRemove) {
+        try {
+          const deleteResponse = await fetch(
+            `${API_BASE}/uploads/delete-file?file_url=${encodeURIComponent(url)}`,
+            {
+              method: "DELETE",
+              headers: {
+                "Authorization": `Bearer ${accessToken}`,
+              },
+            }
+          );
+
+          if (!deleteResponse.ok) {
+            let errorMessage = "Failed to delete file";
+            try {
+              const errorData = await deleteResponse.json();
+              errorMessage = errorData.detail || errorData.message || errorMessage;
+            } catch (e) {
+              errorMessage = `Server error: ${deleteResponse.status} ${deleteResponse.statusText}`;
+            }
+            console.error(errorMessage);
+          } else {
+            console.log(`Successfully deleted file: ${url}`);
+          }
+        } catch (error) {
+          console.error("Error deleting file:", error);
         }
       }
 

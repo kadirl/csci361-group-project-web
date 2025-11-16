@@ -30,6 +30,7 @@ export default function EditSideSheet(props: EditSideSheetProps) {
   // Combined array for both existing URLs (strings) and new files (File objects)
   const [images, setImages] = useState<(string | File)[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [oldImagesToRemove, setOldImagesToRemove] = useState<string[]>([]);
 
   useEffect(() => {
     if (currentItem) {
@@ -76,6 +77,10 @@ export default function EditSideSheet(props: EditSideSheetProps) {
   };
 
   const handleRemoveImage = (index: number) => {
+    if (typeof images[index] === "string") {
+      // If it's an existing URL, mark it for removal
+      setOldImagesToRemove((prev) => [...prev, images[index] as string]);
+    }
     setImages((prev) => prev.filter((_, i) => i !== index));
     setImagePreviews((prev) => prev.filter((_, i) => i !== index));
   };
@@ -96,6 +101,7 @@ export default function EditSideSheet(props: EditSideSheetProps) {
             unit: formData.unit,
           },
           pictures: images, // Pass the combined array
+          picturesToRemove: oldImagesToRemove,
         });
         onClose();
       }
@@ -106,8 +112,6 @@ export default function EditSideSheet(props: EditSideSheetProps) {
   };
 
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this item?')) return;
-
     try {
       if (currentItem?.product_id) {
         await deleteItem(currentItem.product_id);
