@@ -7,7 +7,7 @@ const Sidebar = () => {
   const pages = [
     { name: 'Dashboard', path: '/' },
     { name: 'Catalog', path: '/catalog' },
-    { name: 'Finances', path: '/finances' },
+    { name: 'Linkings', path: '/linkings' },
     { name: 'Orders', path: '/orders' },
     { name: 'Complaints', path: '/complaints' },
   ];
