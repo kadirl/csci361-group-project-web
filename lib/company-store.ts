@@ -83,5 +83,76 @@ export const useCompanyStore = create<CompanyStore>()(
         set({ error: error.message, loading: false });
       }
     },
+
+    addUser: async (userData) => {
+      const token = useAuthStore.getState().accessToken;
+      set({ loading: true, error: null });
+      try {
+        const response = await fetch(`${API_BASE}/user/`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            ...userData,
+            locale: "en",
+          }),
+        });
+
+        if (!response.ok) {
+          let errorMessage = "Failed to add user";
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.detail || errorData.message || errorMessage;
+          } catch (e) {
+            errorMessage = `Server error: ${response.status} ${response.statusText}`;
+          }
+          throw new Error(errorMessage);
+        }
+
+        // Refetch users to update the list
+        const state = useCompanyStore.getState();
+        await state.fetchUsers();
+      } catch (error: any) {
+        set({ error: error.message, loading: false });
+        throw error;
+      }
+    },
+
+    updateUser: async (userId, userData) => {
+      const token = useAuthStore.getState().accessToken;
+      set({ loading: true, error: null });
+      try {
+        const response = await fetch(`${API_BASE}/user/${userId}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          credentials: "include",
+          body: JSON.stringify(userData),
+        });
+
+        if (!response.ok) {
+          let errorMessage = "Failed to update user";
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.detail || errorData.message || errorMessage;
+          } catch (e) {
+            errorMessage = `Server error: ${response.status} ${response.statusText}`;
+          }
+          throw new Error(errorMessage);
+        }
+
+        // Refetch users to update the list
+        const state = useCompanyStore.getState();
+        await state.fetchUsers();
+      } catch (error: any) {
+        set({ error: error.message, loading: false });
+        throw error;
+      }
+    },
   }),
 );

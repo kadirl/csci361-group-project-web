@@ -61,4 +61,20 @@ export type CompanyStore = {
 
   fetchUsers: () => Promise<void>;
   getCompanyDetails: () => Promise<void>;
+  addUser: (userData: {
+    first_name: string;
+    last_name: string;
+    phone_number: string;
+    email: string;
+    password: string;
+    role: string;
+  }) => Promise<void>;
+  updateUser: (userId: number, userData: {
+    first_name: string;
+    last_name: string;
+    phone_number: string;
+    email: string;
+    password?: string;
+    role: string;
+  }) => Promise<void>;
 };

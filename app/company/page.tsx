@@ -2,12 +2,19 @@
 
 import { useCitiesStore } from "@/lib/cities-store";
 import { useCompanyStore } from "@/lib/company-store";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { User } from "@/lib/constants";
+import AddUserSideSheet from "./components/AddUserSideSheet";
+import EditUserSideSheet from "./components/EditUserSideSheet";
 
 function CompanyPage() {
-  const { company, users, loading, error, getCompanyDetails, fetchUsers } = useCompanyStore();
+  const { company, users, loading, error, getCompanyDetails, fetchUsers, addUser, updateUser } = useCompanyStore();
   const cities = useCitiesStore(state => state.cities);
   const city = cities.find(city => String(city.city_id) === company.location);
+
+  const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
+  const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
   useEffect(() => {
     getCompanyDetails();
@@ -88,7 +95,16 @@ function CompanyPage() {
 
       {/* Staff Section */}
       <div className="bg-[#1a1a1a] border border-[#3a3a3a] rounded-lg p-6">
-        <h2 className="text-2xl font-bold text-white mb-4">Staff Members</h2>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-bold text-white">Staff Members</h2>
+          <button
+            onClick={() => setIsAddSheetOpen(true)}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center gap-2"
+          >
+            <span className="text-xl">+</span>
+            Add User
+          </button>
+        </div>
 
         {loading && users.length === 0 ? (
           <p className="text-gray-400">Loading staff...</p>
@@ -110,6 +126,11 @@ function CompanyPage() {
                 {users.map((user) => (
                   <tr
                     key={user.user_id}
+                    onClick={() => {
+                      setSelectedUser(user);
+                      // Small delay to allow form data to update before animation starts
+                      setTimeout(() => setIsEditSheetOpen(true), 0);
+                    }}
                     className="border-b border-[#4a4a4a] cursor-pointer hover:bg-[#3a3a3a] transition-colors"
                   >
                     <td className="py-3 px-4 text-white">
@@ -139,6 +160,30 @@ function CompanyPage() {
           </div>
         )}
       </div>
+
+      {/* Add User Side Sheet */}
+      <AddUserSideSheet
+        isOpen={isAddSheetOpen}
+        onClose={() => setIsAddSheetOpen(false)}
+        onSave={addUser}
+      />
+
+      {/* Edit User Side Sheet */}
+      <EditUserSideSheet
+        isOpen={isEditSheetOpen}
+        onClose={() => {
+          setIsEditSheetOpen(false);
+          // Delay clearing selected user until after animation completes
+          setTimeout(() => setSelectedUser(null), 300);
+        }}
+        onSave={(userData) => {
+          if (selectedUser) {
+            return updateUser(selectedUser.user_id, userData);
+          }
+          return Promise.resolve();
+        }}
+        user={selectedUser}
+      />
     </div>
   );
 }
