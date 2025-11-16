@@ -43,11 +43,22 @@ export type AuthStore = {
   logout: () => void;
   setTokens: (accessToken: string, refreshToken: string) => void;
   uploadPhotos: (files: File[]) => Promise<string[]>;
-  updateUser: (data: {
-    first_name: string;
-    last_name: string;
-    phone_number: string;
-    email: string;
-    locale: string;
-  }) => Promise<void>;
+};
+
+export type CompanyStore = {
+  users: User[];
+  loading: boolean;
+  error: string | null;
+  company: {
+    name: string;
+    description: string;
+    logo_url?: string;
+    location: string;
+    status: string;
+    company_id: number;
+    company_type: "supplier" | "consumer";
+  };
+
+  fetchUsers: () => Promise<void>;
+  getCompanyDetails: () => Promise<void>;
 };
