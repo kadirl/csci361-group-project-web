@@ -21,5 +21,12 @@
       "save": "Save",
       "delete": "Delete"
     }
+  },
+  "Sidebar": {
+    "dashboard": "Dashboard",
+    "catalogs": "Catalogs",
+    "linkings": "Linkings",
+    "orders": "Orders",
+    "complaints": "Complaints"
   }
 }

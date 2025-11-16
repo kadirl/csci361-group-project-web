@@ -21,5 +21,12 @@
       "save": "Сохранить",
       "delete": "Удалить"
     }
+  },
+  "Sidebar": {
+    "dashboard": "Панель управления",
+    "catalogs": "Каталоги",
+    "linkings": "Связи",
+    "orders": "Заказы",
+    "complaints": "Жалобы"
   }
 }

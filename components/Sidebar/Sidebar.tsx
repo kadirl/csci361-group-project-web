@@ -2,14 +2,16 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 const Sidebar = () => {
+  const t = useTranslations("Sidebar");
   const pages = [
-    { name: 'Dashboard', path: '/' },
-    { name: 'Catalog', path: '/catalog' },
-    { name: 'Linkings', path: '/linkings' },
-    { name: 'Orders', path: '/orders' },
-    { name: 'Complaints', path: '/complaints' },
+    { name: t("dashboard"), path: '/' },
+    { name: t("catalogs"), path: '/catalog' },
+    { name: t("linkings"), path: '/linkings' },
+    { name: t("orders"), path: '/orders' },
+    { name: t("complaints"), path: '/complaints' },
   ];
 
   const pathname = usePathname();
